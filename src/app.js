@@ -1,7 +1,5 @@
 /**
  * Welcome to Pebble.js!
- *
- * This is where you write your app.
  */
 
 var UI = require('ui');
@@ -61,7 +59,7 @@ ajax({
     data[e.item.type] = (e.item.value ? e.item.value : e.item.title);
     
     if(Settings.data('location')) {
-      var loc = Settings.data('location');
+      var loc = JSON.parse(Settings.data('location'));
       data.location = 'geo:'+loc.coords.latitude+','+loc.coords.longitude+';u='+loc.coords.accuracy;
     }
     
@@ -86,7 +84,6 @@ ajax({
       card.body('Your entry was posted!');
       card.show();
 
-      console.log(data);
     }, function(error){
       var card = new UI.Card();
       card.title(e.item.title);
