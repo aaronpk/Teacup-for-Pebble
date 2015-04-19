@@ -39,6 +39,24 @@ navigator.geolocation.getCurrentPosition(function(pos){
   console.log("Error finding location ("+err.code+") "+err.message);
 }, locationOptions);
 
+if(token) {
+  showTeacupList();
+} else {
+  showLoginMessage();
+}
+
+function showLoginMessage() {
+  // Create a simple Card
+  var card = new UI.Card({
+    title: 'Please log in',
+    body: 'Open the Pebble app on your phone and go to the settings for Teacup.'
+  });
+
+  // Display to the user
+  card.show();
+}
+
+function showTeacupList() {
 ajax({
   url: baseUrl+"/pebble/options.json?token="+token,
   method: 'get',
@@ -95,4 +113,5 @@ ajax({
   });
 
 });
+}
 
