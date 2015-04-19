@@ -24,12 +24,12 @@ Settings.config({
   if(e.failed) {
     // Error parsing the saved options
   } else {
-    Settings.data('token', e.options.token);
+    Settings.data('pebbletoken', e.options.token);
     console.log(JSON.stringify(e.options));
   }
 });
 
-var token = Settings.data('token');
+var token = Settings.data('pebbletoken');
 
 navigator.geolocation.getCurrentPosition(function(pos){
   Settings.data('location', JSON.stringify(pos));
