@@ -75,70 +75,84 @@ function showLocatingMessage() {
   return card;
 }
 
-function showTeacupList() {
-
-var loc = null;
-var location_query = '';
-if(Settings.data('location')) {
-  console.log("Last known location:");
-  console.log(Settings.data('location'));
-
-  loc = JSON.parse(Settings.data('location'));
-  location_query = '&latitude='+loc.coords.latitude+'&longitude='+loc.coords.longitude;
-}
-
-ajax({
-  url: baseUrl+"/pebble/options.json?token="+token+location_query,
-  method: 'get',
-  type: 'json'
-}, function(data) {
-
-  var options = new UI.Menu(data);
-  options.show();
-  
-  options.on('select', function(e) {
-
-    var data = {
-      h: 'entry'
-    };
-    data[e.item.type] = (e.item.value ? e.item.value : e.item.title);
-    
-    if(Settings.data('location')) {
-      var loc = JSON.parse(Settings.data('location'));
-      data.location = 'geo:'+loc.coords.latitude+','+loc.coords.longitude+';u='+loc.coords.accuracy;
-    }
-    
-    ajax({
-      url: baseUrl+"/post",
-      method: 'post',
-      data: data,
-      headers: {
-        'Authorization': 'Bearer '+token
-      }
-    }, function(data){
-      //card.subtitle('Success!');
-      //card.body('This entry was posted to your site!');
-      //card.show();
-
-      Vibe.vibrate('short');
-      options.hide();
-
-      var card = new UI.Card();
-      card.title(e.item.title);
-      card.subtitle('Success!');
-      card.body('Your entry was posted!');
-      card.show();
-
-    }, function(error){
-      var card = new UI.Card();
-      card.title(e.item.title);
-      card.subtitle('Error!');
-      card.body('There was an error posting the entry!');
-      card.show();
-      console.log(error);
-    });
+function showLoadingMessage() {
+  var card = new UI.Card({
+    title: 'Loading...',
+    body: 'Loading options...'
   });
 
-});
+  // Display to the user
+  card.show();
+  
+  return card;
+}
+
+function showTeacupList() {
+
+  var loc = null;
+  var location_query = '';
+  if(Settings.data('location')) {
+    console.log("Last known location:");
+    console.log(Settings.data('location'));
+
+    loc = JSON.parse(Settings.data('location'));
+    location_query = '&latitude='+loc.coords.latitude+'&longitude='+loc.coords.longitude;
+  }
+
+  var loadingCard = showLoadingMessage();
+
+  ajax({
+    url: baseUrl+"/pebble/options.json?token="+token+location_query,
+    method: 'get',
+    type: 'json'
+  }, function(data) {
+
+    var options = new UI.Menu(data);
+    options.show();
+
+    loadingCard.hide();
+    
+    options.on('select', function(e) {
+
+      var data = {
+        h: 'entry'
+      };
+      data[e.item.type] = (e.item.value ? e.item.value : e.item.title);
+      
+      if(Settings.data('location')) {
+        var loc = JSON.parse(Settings.data('location'));
+        data.location = 'geo:'+loc.coords.latitude+','+loc.coords.longitude+';u='+loc.coords.accuracy;
+      }
+      
+      ajax({
+        url: baseUrl+"/post",
+        method: 'post',
+        data: data,
+        headers: {
+          'Authorization': 'Bearer '+token
+        }
+      }, function(data){
+
+        Vibe.vibrate('short');
+        options.hide();
+
+        var card = new UI.Card();
+        card.title(e.item.title);
+        card.subtitle('Success!');
+        card.body('Your entry was posted!');
+        card.show();
+
+      }, function(error){
+        var card = new UI.Card();
+        card.title(e.item.title);
+        card.subtitle('Error!');
+        card.body('There was an error posting the entry!');
+        card.show();
+
+        console.log(error);
+      });
+    });
+
+  });
 }
 
