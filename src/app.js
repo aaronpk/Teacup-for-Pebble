@@ -39,12 +39,10 @@ if(token) {
     Settings.data('location', JSON.stringify(pos));
     console.log("found location");
     console.log(pos);
-    showTeacupList();
-    locatingCard.hide();
+    showTeacupList(locatingCard);
   }, function(err){
     console.log("Error finding location ("+err.code+") "+err.message);
-    showTeacupList();
-    locatingCard.hide();
+    showTeacupList(locatingCard);
   }, locationOptions);
 } else {
   showLoginMessage();
@@ -75,19 +73,14 @@ function showLocatingMessage() {
   return card;
 }
 
-function showLoadingMessage() {
-  var card = new UI.Card({
-    title: 'Loading...',
-    body: 'Loading options...'
-  });
-
-  // Display to the user
-  card.show();
+function showLoadingMessage(card) {
+  card.title('Loading...');
+  card.body('Loading options...');
   
   return card;
 }
 
-function showTeacupList() {
+function showTeacupList(loadingCard) {
 
   var loc = null;
   var location_query = '';
@@ -99,8 +92,8 @@ function showTeacupList() {
     location_query = '&latitude='+loc.coords.latitude+'&longitude='+loc.coords.longitude;
   }
 
-  var loadingCard = showLoadingMessage();
-
+  showLoadingMessage(loadingCard);
+  
   ajax({
     url: baseUrl+"/pebble/options.json?token="+token+location_query,
     method: 'get',
