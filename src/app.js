@@ -12,7 +12,7 @@ var baseUrl = 'https://teacup.p3k.io';
 var locationOptions = {
   enableHighAccuracy: true, 
   maximumAge: 600000, 
-  timeout: 60000
+  timeout: 5000 // 5 second timeout
 };
 
 Settings.config({
@@ -31,16 +31,21 @@ Settings.config({
 
 var token = Settings.data('pebbletoken');
 
-navigator.geolocation.getCurrentPosition(function(pos){
-  Settings.data('location', JSON.stringify(pos));
-  console.log("found location");
-  console.log(pos);
-}, function(err){
-  console.log("Error finding location ("+err.code+") "+err.message);
-}, locationOptions);
-
 if(token) {
-  showTeacupList();
+  // Try to get the user's location and wait to query for the options until location is available.
+  // If it times out, it'll just use the last known location instead.
+  var locatingCard = showLocatingMessage();
+  navigator.geolocation.getCurrentPosition(function(pos){
+    Settings.data('location', JSON.stringify(pos));
+    console.log("found location");
+    console.log(pos);
+    showTeacupList();
+    locatingCard.hide();
+  }, function(err){
+    console.log("Error finding location ("+err.code+") "+err.message);
+    showTeacupList();
+    locatingCard.hide();
+  }, locationOptions);
 } else {
   showLoginMessage();
 }
@@ -54,11 +59,36 @@ function showLoginMessage() {
 
   // Display to the user
   card.show();
+  
+  return card;
+}
+
+function showLocatingMessage() {
+  var card = new UI.Card({
+    title: 'Locating...',
+    body: 'Finding your location...'
+  });
+
+  // Display to the user
+  card.show();
+  
+  return card;
 }
 
 function showTeacupList() {
+
+var loc = null;
+var location_query = '';
+if(Settings.data('location')) {
+  console.log("Last known location:");
+  console.log(Settings.data('location'));
+
+  loc = JSON.parse(Settings.data('location'));
+  location_query = '&latitude='+loc.coords.latitude+'&longitude='+loc.coords.longitude;
+}
+
 ajax({
-  url: baseUrl+"/pebble/options.json?token="+token,
+  url: baseUrl+"/pebble/options.json?token="+token+location_query,
   method: 'get',
   type: 'json'
 }, function(data) {
@@ -66,9 +96,6 @@ ajax({
   var options = new UI.Menu(data);
   options.show();
   
-  console.log("Last known location:");
-  console.log(Settings.data('location'));
-
   options.on('select', function(e) {
 
     var data = {

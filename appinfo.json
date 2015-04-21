@@ -40,7 +40,7 @@
     "shortName": "Teacup",
     "uuid": "60987698-eaaa-460f-b533-3acdd43aa4ef",
     "versionCode": 1,
-    "versionLabel": "1.0",
+    "versionLabel": "1.2",
     "watchapp": {
         "watchface": false
     }
