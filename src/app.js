@@ -64,7 +64,8 @@ function showLoginMessage() {
 function showLocatingMessage() {
   var card = new UI.Card({
     title: 'Locating...',
-    body: 'Finding your location...'
+    subtitle: '',
+    body: ''
   });
 
   // Display to the user
@@ -75,7 +76,32 @@ function showLocatingMessage() {
 
 function showLoadingMessage(card) {
   card.title('Loading...');
-  card.body('Loading options...');
+  card.subtitle('');
+  card.body('');
+  
+  return card;
+}
+
+function showPostingMessage(entry, card) {
+  card.title('Posting...');
+  card.subtitle('');
+  card.body(entry);
+
+  return card;
+}
+
+function showSuccessMessage(entry, card) {
+  card.title(entry);
+  card.subtitle('Success!');
+  card.body('Your entry was posted!');
+  
+  return card;
+}
+
+function showErrorMessage(entry, card) {
+  card.title(entry);
+  card.subtitle('Error!');
+  card.body('There was an error posting the entry.');
   
   return card;
 }
@@ -116,7 +142,12 @@ function showTeacupList(loadingCard) {
         var loc = JSON.parse(Settings.data('location'));
         data.location = 'geo:'+loc.coords.latitude+','+loc.coords.longitude+';u='+loc.coords.accuracy;
       }
-      
+
+      options.hide();
+      var card = new UI.Card();
+      showPostingMessage(e.item.title, card);
+      card.show();
+
       ajax({
         url: baseUrl+"/post",
         method: 'post',
@@ -127,20 +158,11 @@ function showTeacupList(loadingCard) {
       }, function(data){
 
         Vibe.vibrate('short');
-        options.hide();
-
-        var card = new UI.Card();
-        card.title(e.item.title);
-        card.subtitle('Success!');
-        card.body('Your entry was posted!');
-        card.show();
+        showSuccessMessage(e.item.title, card);
 
       }, function(error){
         var card = new UI.Card();
-        card.title(e.item.title);
-        card.subtitle('Error!');
-        card.body('There was an error posting the entry!');
-        card.show();
+        showErrorMessage(e.item.title, card);
 
         console.log(error);
       });
